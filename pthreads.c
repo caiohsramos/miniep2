@@ -6,8 +6,9 @@
 #define N 3
 #define M 3
 #define P (M + N)
+#define LIMITE 100
 
-enum { LIVRE, OCUPADA };
+enum { LIVRE, OCUPADA, SAPO, RA };
 
 typedef struct thread_data {
 	int thread_id;
@@ -29,29 +30,52 @@ void inicia_lagoa() {
 	lagoa[P/2] = LIVRE;
 }
 
+int deadlock() {
+	if(cnt > LIMITE || cnt < 0) return 1;
+	else return 0;
+
+}
+
+int tenta_pular(int genero, int pos) {
+	if(genero == SAPO) { //sapo p/ direita
+
+	} else { //ra p/ esquerda
+
+	}
+
+	return 0; //nao pulou
+
+	//return 1; //pulou
+}
+
 void *sapo(void* arg) {
 	THREAD_DATA *data = (THREAD_DATA*)arg;
-	pthread_mutex_lock(&lock);
-	sleep(1);
-	printf("Sou sapo na posição %d\n", data->pos_inicial);
-	if(lagoa[data->pos_inicial] == LIVRE) 
-		printf("Estou numa posicao livre\n");
-	else 
-		printf("Estou numa posicao ocupada\n");
-	pthread_mutex_unlock(&lock);
+	while(!deadlock()) {
+		pthread_mutex_lock(&lock);
+		//sleep(1);
+		printf("Sou sapo na posição %d\n", data->pos_inicial);
+		if(tenta_pular(SAPO, data->pos_inicial)) cnt = 0;
+		else cnt++;
+		pthread_mutex_unlock(&lock);
+	}
 	pthread_exit(NULL);	
 }
 
 void *ra(void *arg) {
 	THREAD_DATA *data = (THREAD_DATA*)arg;
-	pthread_mutex_lock(&lock);
-	sleep(1);
-	printf("Sou ra na posição %d\n", data->pos_inicial);
-	if(lagoa[data->pos_inicial] == LIVRE) 
-		printf("Estou numa posicao livre\n");
-	else 
-		printf("Estou numa posicao ocupada\n");
-	pthread_mutex_unlock(&lock);
+	while(!deadlock()) {
+		pthread_mutex_lock(&lock);
+		//sleep(1);
+		printf("Sou ra na posição %d\n", data->pos_inicial);
+		if(tenta_pular(RA, data->pos_inicial)) cnt = 0;
+		else cnt ++;
+		pthread_mutex_unlock(&lock);
+	}
+	pthread_exit(NULL);	
+}
+
+void *gerenciador(void *arg) {
+	
 	pthread_exit(NULL);	
 }
 
@@ -72,14 +96,19 @@ int main(int argc, char *argv[]) {
 
    	pthread_mutex_lock(&lock);
 	// thread[0] vai ser a gerenciadora
+	data_array[0].thread_id = 0;
+	data_array[0].pos_inicial = -1;
+	pthread_create(&thread[0], NULL, gerenciador, (void*)&data_array[0]);	
+
+	//inicializa as ras
 	for(t = 1; t <= N; t++) {
-		//inicializa as ras
 		data_array[t].thread_id = t;
 		data_array[t].pos_inicial = t-1;
 		pthread_create(&thread[t], NULL, ra, (void*)&data_array[t]);	
 	}
+
+	//inicializa os sapos
 	for(t = N+1; t <= P; t++) {
-		//inicializa os sapos
 		data_array[t].thread_id = t;
 		data_array[t].pos_inicial = t;
 		pthread_create(&thread[t], NULL, sapo, (void*)&data_array[t]);	
