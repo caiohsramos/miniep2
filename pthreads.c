@@ -6,9 +6,9 @@
 #define N 3
 #define M 3
 #define P (M + N)
-#define LIMITE 100
+#define LIMITE 10000
 
-enum { LIVRE, OCUPADA, SAPO, RA };
+enum { LIVRE, SAPO, RA };
 
 typedef struct thread_data {
 	int thread_id;
@@ -24,37 +24,64 @@ void inicia_lagoa() {
 	lagoa = (int*)malloc(sizeof(int)*(P+1));
 	if(lagoa == NULL) printf("\nmalloc falhou\n");
 	int i;
-	for(i = 0; i <= P; i++) {
-		lagoa[i] = OCUPADA;
+	for(i = 0; i < N; i++) {
+		lagoa[i] = RA;
 	}
-	lagoa[P/2] = LIVRE;
+	lagoa[i++] = LIVRE;
+	for(; i <= P; i++) {
+		lagoa[i] = SAPO; 
+	}
 }
 
 int deadlock() {
-	if(cnt > LIMITE || cnt < 0) return 1;
+	if(cnt > LIMITE) return 1;
 	else return 0;
 
 }
 
-int tenta_pular(int genero, int pos) {
-	if(genero == SAPO) { //sapo p/ direita
-
-	} else { //ra p/ esquerda
-
+int tenta_pular(int genero, int *pos_end) {
+	int pos = *pos_end;
+	//ra p/ direita
+	if(genero == RA) { 
+		//pulo simples
+		if(((pos+1) < (P+1)) && (lagoa[pos+1] == LIVRE)) {
+			lagoa[pos] = LIVRE;
+			lagoa[pos+1] = RA;
+			*pos_end = pos+1;
+			return 1;
+		//pulo duplo
+		} else if(((pos+2) < (P+1)) && (lagoa[pos+2] == LIVRE) && (lagoa[pos+1] != LIVRE)) {
+			lagoa[pos] = LIVRE;
+			lagoa[pos+2] = RA;
+			*pos_end = pos+2;
+			return 1;
+		} else return 0;
+	//sapo p/ esquerda
+	} else { 
+		//pulo simples
+		if(((pos-1) >= 0) && (lagoa[pos-1] == LIVRE)) {
+			lagoa[pos] = LIVRE;
+			lagoa[pos-1] = SAPO;
+			*pos_end = pos-1;
+			return 1;
+		//pulo duplo
+		} else if(((pos-2) >= 0) && (lagoa[pos-2] == LIVRE) && (lagoa[pos-1] != LIVRE)) {
+			//faz pulo duplo
+			lagoa[pos] = LIVRE;
+			lagoa[pos-2] = SAPO;
+			*pos_end = pos-2;
+			return 1;
+		} else return 0;
 	}
 
-	return 0; //nao pulou
-
-	//return 1; //pulou
 }
 
 void *sapo(void* arg) {
 	THREAD_DATA *data = (THREAD_DATA*)arg;
+	int pos = data->pos_inicial;
 	while(!deadlock()) {
 		pthread_mutex_lock(&lock);
-		//sleep(1);
-		printf("Sou sapo na posição %d\n", data->pos_inicial);
-		if(tenta_pular(SAPO, data->pos_inicial)) cnt = 0;
+		if(tenta_pular(SAPO, &pos)) cnt = 0;
 		else cnt++;
 		pthread_mutex_unlock(&lock);
 	}
@@ -63,11 +90,10 @@ void *sapo(void* arg) {
 
 void *ra(void *arg) {
 	THREAD_DATA *data = (THREAD_DATA*)arg;
+	int pos = data->pos_inicial;
 	while(!deadlock()) {
 		pthread_mutex_lock(&lock);
-		//sleep(1);
-		printf("Sou ra na posição %d\n", data->pos_inicial);
-		if(tenta_pular(RA, data->pos_inicial)) cnt = 0;
+		if(tenta_pular(RA, &pos)) cnt = 0;
 		else cnt ++;
 		pthread_mutex_unlock(&lock);
 	}
@@ -115,10 +141,27 @@ int main(int argc, char *argv[]) {
 	}
 	pthread_mutex_unlock(&lock);
 	
-	for(t = 1; t <= P; t++)
+	for(t = 0; t <= P; t++)
 		    pthread_join(thread[t],NULL);
-	//pthread_join(threadGerencia,NULL);
-	
+
+	int i;	
+	for(i = 0; i <= P; i++) {
+		switch(lagoa[i]) {
+			case SAPO:
+				printf("S");
+				break;
+			case RA:
+				printf("R");
+				break;
+			case LIVRE:
+				printf("*");
+				break;
+			default:
+				break;
+		};
+	}
+	printf("\n\n");
+
 	free(data_array);
 	free(lagoa);
 
