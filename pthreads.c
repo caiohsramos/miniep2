@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<pthread.h>
+#include<time.h>
 
 #define N 3
 #define M 3
@@ -37,6 +38,12 @@ int deadlock() {
 	if(cnt > LIMITE) return 1;
 	else return 0;
 
+}
+
+void dummy() {
+	int i;
+	int n = rand()%1000;
+	for(i = 0; i < n; i++);
 }
 
 int tenta_pular(int genero, int *pos_end) {
@@ -83,6 +90,7 @@ void *sapo(void* arg) {
 		pthread_mutex_lock(&lock);
 		if(tenta_pular(SAPO, &pos)) cnt = 0;
 		else cnt++;
+		dummy();
 		pthread_mutex_unlock(&lock);
 	}
 	pthread_exit(NULL);	
@@ -95,10 +103,12 @@ void *ra(void *arg) {
 		pthread_mutex_lock(&lock);
 		if(tenta_pular(RA, &pos)) cnt = 0;
 		else cnt ++;
+		dummy();
 		pthread_mutex_unlock(&lock);
 	}
 	pthread_exit(NULL);	
 }
+
 
 void *gerenciador(void *arg) {
 	
@@ -108,6 +118,7 @@ void *gerenciador(void *arg) {
 int main(int argc, char *argv[]) {
     pthread_t thread[P+1];
 	int t;
+	srand(time(NULL));
 
 	THREAD_DATA *data_array = (THREAD_DATA*)malloc(sizeof(THREAD_DATA)*(P+1));
 	if(data_array == NULL) 
