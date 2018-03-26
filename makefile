@@ -1,9 +1,7 @@
 all:
 	gcc -c pthreads.c -pthread
-	gcc pthreads.o -o 1 -pthread
+	gcc pthreads.o -o frog -pthread
 
-run:
-	@./script.sh
 clean:
-	rm 1 *.o
+	rm frog *.o
 

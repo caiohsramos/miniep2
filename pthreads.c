@@ -4,10 +4,7 @@
 #include<pthread.h>
 #include<time.h>
 
-#define N 3
-#define M 3
-#define P (M + N)
-#define LIMITE 3000
+#define LIMITE 500
 
 enum { LIVRE, SAPO, RA };
 
@@ -17,6 +14,9 @@ typedef struct thread_data {
 } THREAD_DATA;
 
 //variaveis globais
+int N; //numero de ras
+int M; //numero de sapos
+int P; //ras + sapos
 int cnt = 0;
 int *lagoa = NULL;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
@@ -37,6 +37,8 @@ void inicia_lagoa() {
 int deadlock() {
 	if(cnt > LIMITE) return 1;
 	else return 0;
+	//-------------FAZER---------------
+	//verifica se o estado e um deadlock
 
 }
 
@@ -110,17 +112,20 @@ void *ra(void *arg) {
 }
 
 
-void *gerenciador(void *arg) {
-	
-	pthread_exit(NULL);	
-}
-
 int main(int argc, char *argv[]) {
-    pthread_t thread[P+1];
+	if(argc < 3) {
+		printf("Numero de argumentos insuficiente\n");
+		return 1;
+	}
+	N = atoi(argv[1]);
+	M = atoi(argv[2]);
+	P = M + N;
+
+    pthread_t thread[P];
 	int t;
 	srand(time(NULL));
 
-	THREAD_DATA *data_array = (THREAD_DATA*)malloc(sizeof(THREAD_DATA)*(P+1));
+	THREAD_DATA *data_array = (THREAD_DATA*)malloc(sizeof(THREAD_DATA)*P);
 	if(data_array == NULL) 
 		printf("\nmalloc falhou\n");
 
@@ -132,27 +137,22 @@ int main(int argc, char *argv[]) {
 	inicia_lagoa();
 
    	pthread_mutex_lock(&lock);
-	// thread[0] vai ser a gerenciadora
-	data_array[0].thread_id = 0;
-	data_array[0].pos_inicial = -1;
-	pthread_create(&thread[0], NULL, gerenciador, (void*)&data_array[0]);	
-
 	//inicializa as ras
-	for(t = 1; t <= N; t++) {
+	for(t = 0; t < N; t++) {
 		data_array[t].thread_id = t;
-		data_array[t].pos_inicial = t-1;
+		data_array[t].pos_inicial = t;
 		pthread_create(&thread[t], NULL, ra, (void*)&data_array[t]);	
 	}
 
 	//inicializa os sapos
-	for(t = N+1; t <= P; t++) {
+	for(t = N; t < P; t++) {
 		data_array[t].thread_id = t;
-		data_array[t].pos_inicial = t;
+		data_array[t].pos_inicial = t+1;
 		pthread_create(&thread[t], NULL, sapo, (void*)&data_array[t]);	
 	}
 	pthread_mutex_unlock(&lock);
 	
-	for(t = 0; t <= P; t++)
+	for(t = 0; t < P; t++)
 		    pthread_join(thread[t],NULL);
 
 	int i;	
@@ -172,7 +172,6 @@ int main(int argc, char *argv[]) {
 		};
 	}
 	printf("\n");
-
 	free(data_array);
 	free(lagoa);
 
