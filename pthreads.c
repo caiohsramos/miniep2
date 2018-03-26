@@ -7,7 +7,7 @@
 #define N 3
 #define M 3
 #define P (M + N)
-#define LIMITE 10000
+#define LIMITE 3000
 
 enum { LIVRE, SAPO, RA };
 
@@ -50,17 +50,17 @@ int tenta_pular(int genero, int *pos_end) {
 	int pos = *pos_end;
 	//ra p/ direita
 	if(genero == RA) { 
-		//pulo simples
-		if(((pos+1) < (P+1)) && (lagoa[pos+1] == LIVRE)) {
-			lagoa[pos] = LIVRE;
-			lagoa[pos+1] = RA;
-			*pos_end = pos+1;
-			return 1;
 		//pulo duplo
-		} else if(((pos+2) < (P+1)) && (lagoa[pos+2] == LIVRE) && (lagoa[pos+1] != LIVRE)) {
+		if(((pos+2) < (P+1)) && (lagoa[pos+2] == LIVRE) && (lagoa[pos+1] != LIVRE)) {
 			lagoa[pos] = LIVRE;
 			lagoa[pos+2] = RA;
 			*pos_end = pos+2;
+			return 1;
+		//pulo simples
+		} else if(((pos+1) < (P+1)) && (lagoa[pos+1] == LIVRE)) {
+			lagoa[pos] = LIVRE;
+			lagoa[pos+1] = RA;
+			*pos_end = pos+1;
 			return 1;
 		} else return 0;
 	//sapo p/ esquerda
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
 				break;
 		};
 	}
-	printf("\n\n");
+	printf("\n");
 
 	free(data_array);
 	free(lagoa);

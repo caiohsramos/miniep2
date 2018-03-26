@@ -3,8 +3,7 @@ all:
 	gcc pthreads.o -o 1 -pthread
 
 run:
-	./1
-
+	@./script.sh
 clean:
 	rm 1 *.o
 
