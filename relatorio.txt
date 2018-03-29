@@ -1,0 +1,39 @@
+Caio Henrique Silva Ramos - NUSP 9292991
+
+A solução escolhida consiste na criação de dois tipos de threads para simular o jogo:
+threads 'sapo' e 'ra'. Elas disputam o uso de um vetor compartilhado que contem as posições
+de todos os animais. Assim, quando uma thread consegue o "lock" do mutex ela verifica se 
+tem a opção de pular com a função 'pode_pular()', que retorna '0' ou '1' e a posição depois 
+do possível pulo. Além disso, durante esse tempo ocorre a chamada da função 'deadlock()', 
+que verifica a contagem do contador e se o estado do jogo é um estado de deadlock. As threads
+dos animais também executam um pequeno método 'dummy()' que dorme por 30 usegundos depois de 
+liberar o mutex e antes de pedi-lo de novo. Isso foi feito como forma de evitar que a mesma
+thread consiga o mutex varias vezes seguidas sem dar chance para as outras. 
+
+O programa deve ser executado com:
+	$./script.sh <N> <M>
+onde N é o número de rãs e M é o numero de sapos. O script fará 1000 execuções do jogo e
+imprimirá na tela o resultado. A saida do programa tem formato de uma "tabela" do tipo 
+	# de casos | resultado do jogo
+	   ...     |      ...   
+Também será impresso o tempo que as 1000 execuções demoraram para executar.
+
+Os dados abaixo foram coletados da execução de $./script.sh 3 3 (excepcionalmente com 10k execu
+ções):
+	9918 *RRRSSS
+     34 RRRSSS*
+     16 RRSRSS*
+     10 RRSSS*R
+      6 S*RRSRS
+      6 S*RRRSS
+      6 *RRSRSS
+      1 SSS*RRR (***)
+      1 SRSRS*R
+      1 RSSS*RR
+      1 R*RRSSS 
+Podemos notar que somente uma das 10000 execuções resultou no estado perfeito. Assim, com 1000
+execuções (que é como o script foi enviado) será um pouco difícil de conseguir esse estado.
+
+Por fim, podemos mencionar que o valor do contador usado foi de 50, que foi decidido empiricamente
+depois de testes com o script acima. Com valores menores que 50 o estado encontrado depois da 
+execução do programa não era final.

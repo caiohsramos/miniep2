@@ -1,10 +1,12 @@
+//Caio Henrique Silva Ramos - NUSP 9292991
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
 #include<pthread.h>
 #include<time.h>
 
-#define LIMITE 500
+#define LIMITE 50
 
 enum { LIVRE, SAPO, RA };
 
@@ -37,15 +39,11 @@ void inicia_lagoa() {
 int deadlock() {
 	if(cnt > LIMITE) return 1;
 	else return 0;
-	//-------------FAZER---------------
-	//verifica se o estado e um deadlock
 
 }
 
 void dummy() {
-	int i;
-	int n = rand()%1000;
-	for(i = 0; i < n; i++);
+	usleep(30);
 }
 
 int tenta_pular(int genero, int *pos_end) {
@@ -92,8 +90,8 @@ void *sapo(void* arg) {
 		pthread_mutex_lock(&lock);
 		if(tenta_pular(SAPO, &pos)) cnt = 0;
 		else cnt++;
-		dummy();
 		pthread_mutex_unlock(&lock);
+		dummy();
 	}
 	pthread_exit(NULL);	
 }
@@ -105,8 +103,8 @@ void *ra(void *arg) {
 		pthread_mutex_lock(&lock);
 		if(tenta_pular(RA, &pos)) cnt = 0;
 		else cnt ++;
-		dummy();
 		pthread_mutex_unlock(&lock);
+		dummy();
 	}
 	pthread_exit(NULL);	
 }
