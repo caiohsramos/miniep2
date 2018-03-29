@@ -10,6 +10,10 @@ dos animais também executam um pequeno método 'dummy()' que dorme por 30 usegu
 liberar o mutex e antes de pedi-lo de novo. Isso foi feito como forma de evitar que a mesma
 thread consiga o mutex varias vezes seguidas sem dar chance para as outras. 
 
+O programa deve ser compilado com 
+	$make
+Temos a opção de excluir os binarios
+	$make clean
 O programa deve ser executado com:
 	$./script.sh <N> <M>
 onde N é o número de rãs e M é o numero de sapos. O script fará 1000 execuções do jogo e
